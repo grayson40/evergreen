@@ -140,7 +140,19 @@ if ($binary === false) {
     exit;
 }
 
-$base64 = base64_encode($binary);
+[$visionBinary, $visionMime] = evergreen_reduce_image_for_vision($binary, $mime);
+if ($visionBinary === '') {
+    evergreen_mark_upload_failed($pdo, $uploadId, 'Image exceeds API size limit and could not be resized.');
+    http_response_code(400);
+    echo json_encode([
+        'ok' => false,
+        'error' => 'This photo is too large for the vision service. Use a smaller or more compressed image, or enable PHP GD on the server so we can resize it automatically.',
+        'image' => 'uploads/' . $stored,
+    ]);
+    exit;
+}
+
+$base64 = base64_encode($visionBinary);
 $safeLocation = str_replace(["\r", "\n", "\t"], ' ', $location);
 
 $prompt = <<<PROMPT
@@ -204,7 +216,7 @@ $body = [
                     'type' => 'image',
                     'source' => [
                         'type' => 'base64',
-                        'media_type' => $mime,
+                        'media_type' => $visionMime,
                         'data' => $base64,
                     ],
                 ],
@@ -228,7 +240,7 @@ if (function_exists('set_time_limit')) {
 }
 
 $ch = curl_init('https://api.anthropic.com/v1/messages');
-$curlTimeout = max(60, min(150, $aiDeadlineSeconds - 10));
+$curlTimeout = max(90, min(360, $aiDeadlineSeconds - 5));
 
 curl_setopt_array($ch, [
     CURLOPT_POST => true,
@@ -305,11 +317,11 @@ if ($geminiKey !== '') {
     if (!is_dir($rendersDir) && !mkdir($rendersDir, 0755, true)) {
         $renderError = 'Could not create renders directory.';
     } else {
-        $geminiTimeout = max(90, min(180, $aiDeadlineSeconds - 25));
+        $geminiTimeout = max(90, min(300, $aiDeadlineSeconds - 20));
         $gem = evergreen_gemini_flash_image_edit(
             $geminiKey,
             $geminiModel,
-            $mime,
+            $visionMime,
             $base64,
             $placementParagraph,
             $rendersDir,
@@ -555,6 +567,78 @@ function evergreen_consultation_full_from_layout(array $layout): string
     }
 
     return implode("\n\n", array_filter($md));
+}
+
+/**
+ * Anthropic vision input must stay under ~5 MB decoded; large camera photos exceed that.
+ * Returns [jpeg-or-original-bytes, mime] or ['', mime] on failure.
+ *
+ * @return array{0: string, 1: string}
+ */
+function evergreen_reduce_image_for_vision(string $binary, string $mime): array
+{
+    $maxBytes = 5 * 1024 * 1024 - 262144; // ~4.75 MB under API cap
+    if (strlen($binary) <= $maxBytes) {
+        return [$binary, $mime];
+    }
+    if (!function_exists('imagecreatefromstring') || !function_exists('imagejpeg')) {
+        return ['', $mime];
+    }
+    $src = @imagecreatefromstring($binary);
+    if ($src === false) {
+        return ['', $mime];
+    }
+    $w = imagesx($src);
+    $h = imagesy($src);
+    if ($w < 1 || $h < 1) {
+        imagedestroy($src);
+
+        return ['', $mime];
+    }
+
+    $maxSide = 2560;
+    $quality = 86;
+
+    for ($attempt = 0; $attempt < 28; $attempt++) {
+        $nw = $w;
+        $nh = $h;
+        if ($maxSide > 0 && max($nw, $nh) > $maxSide) {
+            $scale = $maxSide / max($nw, $nh);
+            $nw = max(1, (int) round($nw * $scale));
+            $nh = max(1, (int) round($nh * $scale));
+        }
+
+        $dst = imagecreatetruecolor($nw, $nh);
+        if ($dst === false) {
+            break;
+        }
+        imagealphablending($dst, false);
+        $white = imagecolorallocate($dst, 255, 255, 255);
+        imagefill($dst, 0, 0, $white);
+        imagealphablending($dst, true);
+        imagecopyresampled($dst, $src, 0, 0, 0, 0, $nw, $nh, $w, $h);
+
+        ob_start();
+        imagejpeg($dst, null, $quality);
+        $jpeg = ob_get_clean();
+        imagedestroy($dst);
+
+        if (is_string($jpeg) && strlen($jpeg) <= $maxBytes && strlen($jpeg) > 200) {
+            imagedestroy($src);
+
+            return [$jpeg, 'image/jpeg'];
+        }
+
+        if ($quality > 50) {
+            $quality -= 7;
+        } else {
+            $maxSide = (int) max(400, $maxSide * 0.86);
+        }
+    }
+
+    imagedestroy($src);
+
+    return ['', $mime];
 }
 
 /**
