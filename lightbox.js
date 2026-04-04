@@ -4,6 +4,7 @@
     document.head.insertAdjacentHTML(
         'beforeend',
         '<style id="ev-lightbox-styles">' +
+            'img.ev-photo-lightbox{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}' +
             '#ev-lightbox{' +
             'display:none;position:fixed;inset:0;z-index:9999;' +
             'width:100%;height:100%;max-height:100%;' +
@@ -12,7 +13,7 @@
             'padding:max(10px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(14px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left));' +
             'align-items:center;justify-content:center;' +
             'flex-direction:row;background:rgba(0,0,0,.92);' +
-            'overscroll-behavior:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent;' +
+            'overscroll-behavior:contain;touch-action:manipulation;-webkit-tap-highlight-color:transparent;' +
             '}' +
             '#ev-lightbox.ev-lightbox-open{display:flex!important;}' +
             '#ev-lightbox-img{' +
@@ -44,7 +45,17 @@
     var lbi = document.getElementById('ev-lightbox-img');
     var root = document.documentElement;
     var scrollY = 0;
-    var ignoreClickUntil = 0;
+
+    var LP_MS = 480;
+    var LP_MOVE = 20;
+    var lpTimer = null;
+    var lpStart = null;
+    var lpImg = null;
+    var lpOpenedThisGesture = false;
+
+    function useLongPressOpen() {
+        return window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+    }
 
     function isThumbVisible(img) {
         if (!img.getAttribute('src')) return false;
@@ -75,43 +86,84 @@
         lb.classList.add('ev-lightbox-open');
     }
 
-    function tryOpenFromTarget(t) {
-        var img = t && t.closest && t.closest('img.ev-photo-lightbox');
-        if (!img || !isThumbVisible(img)) return false;
-        open(img.currentSrc || img.src, img.alt);
-        return true;
+    function clearLongPress() {
+        if (lpTimer) {
+            clearTimeout(lpTimer);
+            lpTimer = null;
+        }
+        lpStart = null;
+        lpImg = null;
     }
 
-    lb.addEventListener('click', close);
-    lb.addEventListener(
-        'touchend',
-        function (e) {
-            if (!lb.classList.contains('ev-lightbox-open')) return;
-            e.preventDefault();
-            close();
-        },
-        { passive: false }
-    );
+    lb.addEventListener('click', function (e) {
+        if (e.target === lb || e.target === lbi) close();
+    });
+
+    document.getElementById('ev-lightbox-close').addEventListener('click', function (e) {
+        e.stopPropagation();
+        close();
+    });
 
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && lb.classList.contains('ev-lightbox-open')) close();
     });
 
     document.addEventListener(
+        'touchstart',
+        function (e) {
+            if (!useLongPressOpen() || lb.classList.contains('ev-lightbox-open')) return;
+            var img = e.target.closest && e.target.closest('img.ev-photo-lightbox');
+            if (!img || !isThumbVisible(img)) return;
+            clearLongPress();
+            lpOpenedThisGesture = false;
+            lpImg = img;
+            lpStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            lpTimer = setTimeout(function () {
+                lpTimer = null;
+                if (!lpImg || !isThumbVisible(lpImg)) return;
+                lpOpenedThisGesture = true;
+                open(lpImg.currentSrc || lpImg.src, lpImg.alt);
+                if (navigator.vibrate) navigator.vibrate(10);
+            }, LP_MS);
+        },
+        { passive: true, capture: true }
+    );
+
+    document.addEventListener(
+        'touchmove',
+        function (e) {
+            if (!lpTimer || !lpStart || !useLongPressOpen()) return;
+            var t = e.touches[0];
+            if (
+                Math.abs(t.clientX - lpStart.x) > LP_MOVE ||
+                Math.abs(t.clientY - lpStart.y) > LP_MOVE
+            ) {
+                clearLongPress();
+            }
+        },
+        { passive: true, capture: true }
+    );
+
+    document.addEventListener(
         'touchend',
         function (e) {
-            if (lb.classList.contains('ev-lightbox-open')) return;
-            if (!tryOpenFromTarget(e.target)) return;
-            e.preventDefault();
-            ignoreClickUntil = Date.now() + 450;
+            if (lpOpenedThisGesture) {
+                e.preventDefault();
+                lpOpenedThisGesture = false;
+            }
+            clearLongPress();
         },
-        { passive: false }
+        { passive: false, capture: true }
     );
+
+    document.addEventListener('touchcancel', clearLongPress, { passive: true, capture: true });
 
     document.addEventListener('click', function (e) {
         if (lb.classList.contains('ev-lightbox-open')) return;
-        if (Date.now() < ignoreClickUntil) return;
-        if (!tryOpenFromTarget(e.target)) return;
+        if (useLongPressOpen()) return;
+        var img = e.target.closest && e.target.closest('img.ev-photo-lightbox');
+        if (!img || !isThumbVisible(img)) return;
         e.preventDefault();
+        open(img.currentSrc || img.src, img.alt);
     });
 })();
