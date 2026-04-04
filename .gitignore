@@ -1,0 +1,5 @@
+.env
+*.sqlite
+docs/
+renders/
+uploads/
