@@ -6,7 +6,7 @@ Upload a yard photo, add your location and goals, get a **written planting plan*
 
 ## Requirements
 
-- PHP **8.0+** with extensions: **pdo_sqlite**, **curl**, **mbstring**, **fileinfo**, **gd** (GD shrinks large photos under Anthropic’s ~5 MB vision limit)
+- PHP **8.0+** with extensions: **pdo_sqlite**, **curl**, **mbstring**, **fileinfo**, **gd**, **exif** (GD shrinks large photos; **exif** bakes JPEG orientation so vertical shots stay upright for AI)
 - Writable **`uploads/`**, **`renders/`**, and **`database.sqlite`** (created on first use)
 
 ## Quick start

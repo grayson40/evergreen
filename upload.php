@@ -114,10 +114,26 @@ if (!move_uploaded_file($file['tmp_name'], $dest)) {
     exit;
 }
 
+$binary = file_get_contents($dest);
+if ($binary === false) {
+    http_response_code(500);
+    echo json_encode(['ok' => false, 'error' => 'Could not read saved file.']);
+    exit;
+}
+
+[$binary, $mime, $orientChanged] = evergreen_orient_pixels_to_display($binary, $mime, $dest);
+if ($orientChanged) {
+    if (file_put_contents($dest, $binary) === false) {
+        http_response_code(500);
+        echo json_encode(['ok' => false, 'error' => 'Could not save oriented image.']);
+        exit;
+    }
+}
+
 $pdo = evergreen_db($dbPath);
 $createdAt = (new DateTimeImmutable('now', new DateTimeZone('UTC')))->format('c');
 $originalName = isset($file['name']) ? (string) $file['name'] : '';
-$sizeBytes = (int) ($file['size'] ?? 0);
+$sizeBytes = strlen($binary);
 
 $logStmt = $pdo->prepare(
     'INSERT INTO uploads (stored_filename, original_filename, mime, size_bytes, created_at, api_success, zones_count, error_message)
@@ -131,14 +147,6 @@ $logStmt->execute([
     ':ca' => $createdAt,
 ]);
 $uploadId = (int) $pdo->lastInsertId();
-
-$binary = file_get_contents($dest);
-if ($binary === false) {
-    evergreen_mark_upload_failed($pdo, $uploadId, 'Could not read saved file.');
-    http_response_code(500);
-    echo json_encode(['ok' => false, 'error' => 'Could not read saved file.']);
-    exit;
-}
 
 [$visionBinary, $visionMime] = evergreen_reduce_image_for_vision($binary, $mime);
 if ($visionBinary === '') {
@@ -570,6 +578,110 @@ function evergreen_consultation_full_from_layout(array $layout): string
 }
 
 /**
+ * Bake EXIF Orientation into pixel data so Claude/Gemini match what the user saw in the camera roll.
+ * JPEG only (typical phone vertical shots). Re-encodes as JPEG without orientation metadata.
+ *
+ * @return array{0: string, 1: string, 2: bool} binary, mime, whether bytes changed (rewrite file)
+ */
+function evergreen_orient_pixels_to_display(string $binary, string $mime, string $jpegPath): array
+{
+    if ($mime !== 'image/jpeg' || !function_exists('exif_read_data') || !function_exists('imagecreatefromstring')) {
+        return [$binary, $mime, false];
+    }
+    $o = 1;
+    $ifd0 = @exif_read_data($jpegPath, 'IFD0', true, false);
+    if (is_array($ifd0) && isset($ifd0['IFD0']['Orientation'])) {
+        $o = (int) $ifd0['IFD0']['Orientation'];
+    } else {
+        $flat = @exif_read_data($jpegPath, null, false, false);
+        if (is_array($flat) && isset($flat['Orientation'])) {
+            $o = (int) $flat['Orientation'];
+        }
+    }
+    if ($o < 2 || $o > 8) {
+        return [$binary, $mime, false];
+    }
+
+    $im = @imagecreatefromstring($binary);
+    if ($im === false) {
+        return [$binary, $mime, false];
+    }
+
+    $bg = imagecolorallocate($im, 255, 255, 255);
+    if ($bg === false) {
+        imagedestroy($im);
+
+        return [$binary, $mime, false];
+    }
+
+    switch ($o) {
+        case 2:
+            imageflip($im, IMG_FLIP_HORIZONTAL);
+            break;
+        case 3:
+            $r = imagerotate($im, 180, $bg);
+            imagedestroy($im);
+            if ($r === false) {
+                return [$binary, $mime, false];
+            }
+            $im = $r;
+            break;
+        case 4:
+            imageflip($im, IMG_FLIP_VERTICAL);
+            break;
+        case 5:
+            imageflip($im, IMG_FLIP_HORIZONTAL);
+            $r = imagerotate($im, -90, $bg);
+            imagedestroy($im);
+            if ($r === false) {
+                return [$binary, $mime, false];
+            }
+            $im = $r;
+            break;
+        case 6:
+            $r = imagerotate($im, -90, $bg);
+            imagedestroy($im);
+            if ($r === false) {
+                return [$binary, $mime, false];
+            }
+            $im = $r;
+            break;
+        case 7:
+            imageflip($im, IMG_FLIP_HORIZONTAL);
+            $r = imagerotate($im, 90, $bg);
+            imagedestroy($im);
+            if ($r === false) {
+                return [$binary, $mime, false];
+            }
+            $im = $r;
+            break;
+        case 8:
+            $r = imagerotate($im, 90, $bg);
+            imagedestroy($im);
+            if ($r === false) {
+                return [$binary, $mime, false];
+            }
+            $im = $r;
+            break;
+        default:
+            imagedestroy($im);
+
+            return [$binary, $mime, false];
+    }
+
+    ob_start();
+    imagejpeg($im, null, 92);
+    $out = ob_get_clean();
+    imagedestroy($im);
+
+    if (!is_string($out) || strlen($out) < 100) {
+        return [$binary, $mime, false];
+    }
+
+    return [$out, 'image/jpeg', true];
+}
+
+/**
  * Anthropic vision input must stay under ~5 MB decoded; large camera photos exceed that.
  * Returns [jpeg-or-original-bytes, mime] or ['', mime] on failure.
  *
@@ -659,7 +771,7 @@ function evergreen_gemini_flash_image_edit(
         rawurlencode($apiKey)
     );
 
-    $instruction = "You are a photorealistic landscape image editor. Edit this photograph by adding vegetation only where soil, lawn, or planting beds exist. Preserve buildings, fences, paths, hardscape, sky, and overall lighting and perspective. Do not remove structures. Blend new plants naturally.\n\nPlant placement instructions for the edit:\n\n"
+    $instruction = "You are a photorealistic landscape image editor. Edit this photograph by adding vegetation only where soil, lawn, or planting beds exist. Preserve buildings, fences, paths, hardscape, sky, and overall lighting and perspective. Do not remove structures. Blend new plants naturally. Keep the same orientation and aspect ratio as the input (portrait stays portrait, landscape stays landscape).\n\nPlant placement instructions for the edit:\n\n"
         . $placementParagraph;
 
     $payloads = [
