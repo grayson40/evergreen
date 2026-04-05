@@ -45,12 +45,12 @@ if (!in_array($plantGoal, ['looks', 'food', 'mixed'], true)) {
 }
 $goalGuidance = match ($plantGoal) {
     'looks' => 'Prioritize ornamental landscaping: curb appeal, color, texture, screening, and seasonal interest. Do not emphasize vegetables or a food garden.',
-    'food' => 'Prioritize edible landscaping: vegetables, fruits, herbs, and productive plants where sun and space allow. Keep the design attractive and practical.',
+    'food' => 'Prioritize a food-forest–style edible landscape: treat the yard as stacked productive layers and use sun, edges, fence lines, and open ground—vertical and horizontal. Recommend a mulch-forward soil foundation (wood chips / organic mulch) under plantings. Design three tiers that are all edible where climate allows: (1) canopy—one or a few taller fruit or nut trees for shade and structure; (2) understory—bushes and shrubs (berries, fruiting shrubs, perennial vegetables); (3) ground layer—edible groundcovers, low herbs, spreading fruits, or shallow-rooted vegetables. Pair major fruit trees with compatible nitrogen-fixing companions (e.g. clover, goumi, sea buckthorn, Siberian pea shrub, or other region-appropriate fixers) and explain pairings briefly. Stack plants to fill available space without overcrowding; keep paths and building clearance realistic.',
     default => 'Balance ornamental appeal with useful edibles (herbs, compact fruit, or selective vegetables) where appropriate.',
 };
 $focusLabel = match ($plantGoal) {
     'looks' => 'Looks & curb appeal',
-    'food' => 'Food, herbs & harvest',
+    'food' => 'Food forest & edibles',
     default => 'Looks + useful edibles',
 };
 
