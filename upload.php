@@ -39,20 +39,45 @@ if ($location === '') {
     exit;
 }
 
-$plantGoal = (string) ($_POST['plant_goal'] ?? 'mixed');
-if (!in_array($plantGoal, ['looks', 'food', 'mixed'], true)) {
-    $plantGoal = 'mixed';
+$plantGoal = (string) ($_POST['plant_goal'] ?? 'looks');
+if ($plantGoal === 'food') {
+    $plantGoal = 'food_forest';
 }
+if (!in_array($plantGoal, ['looks', 'kitchen', 'food_forest', 'mixed'], true)) {
+    $plantGoal = 'looks';
+}
+
+$edibleStyle = trim((string) ($_POST['edible_style'] ?? ''));
+if ($plantGoal === 'mixed') {
+    if (!in_array($edibleStyle, ['kitchen', 'food_forest'], true)) {
+        http_response_code(400);
+        echo json_encode(['ok' => false, 'error' => 'For a balanced plan, choose whether the edible side leans kitchen garden or food forest.']);
+        exit;
+    }
+}
+
+$guidanceLooks = 'Prioritize looks maxing: pure aesthetics, curb appeal, and beauty. Visualize the yard transformed by rich color, soft textures, and traditional garden architecture—a relaxing ornamental retreat and pollinator magnet using plants that thrive in the region. Do not emphasize vegetable rows or a production food system.';
+$guidanceKitchen = 'Prioritize a kitchen garden: a highly functional, organized edible space emphasizing companion planting—herbs, flowers, and vegetables grown closely together to deter pests and maximize harvest of everyday essentials suited to the region. Plan for clear beds, succession where helpful, and practical access while keeping the layout attractive.';
+$guidanceFoodForest = 'Prioritize a food forest: visualize a self-sustaining, multi-layered ecosystem with layers of abundance—turning the open yard into a productive mini-jungle that maximizes vertical and horizontal space using species suited to the region. Use a mulch-forward soil foundation (wood chips / organic mulch). Stack edible canopy (taller fruit or nut trees), understory (berries, fruiting shrubs, perennial vegetables), and ground layer (edible groundcovers, herbs, spreading fruits); pair major fruit trees with nitrogen-fixing companions (e.g. clover, goumi, sea buckthorn, Siberian pea shrub, or region-appropriate fixers) and explain pairings. Fill available space without overcrowding; keep paths and building clearance realistic.';
+
 $goalGuidance = match ($plantGoal) {
-    'looks' => 'Prioritize ornamental landscaping: curb appeal, color, texture, screening, and seasonal interest. Do not emphasize vegetables or a food garden.',
-    'food' => 'Prioritize a food-forest–style edible landscape: treat the yard as stacked productive layers and use sun, edges, fence lines, and open ground—vertical and horizontal. Recommend a mulch-forward soil foundation (wood chips / organic mulch) under plantings. Design three tiers that are all edible where climate allows: (1) canopy—one or a few taller fruit or nut trees for shade and structure; (2) understory—bushes and shrubs (berries, fruiting shrubs, perennial vegetables); (3) ground layer—edible groundcovers, low herbs, spreading fruits, or shallow-rooted vegetables. Pair major fruit trees with compatible nitrogen-fixing companions (e.g. clover, goumi, sea buckthorn, Siberian pea shrub, or other region-appropriate fixers) and explain pairings briefly. Stack plants to fill available space without overcrowding; keep paths and building clearance realistic.',
-    default => 'Balance ornamental appeal with useful edibles (herbs, compact fruit, or selective vegetables) where appropriate.',
+    'looks' => $guidanceLooks,
+    'kitchen' => $guidanceKitchen,
+    'food_forest' => $guidanceFoodForest,
+    default => '',
 };
 $focusLabel = match ($plantGoal) {
-    'looks' => 'Looks & curb appeal',
-    'food' => 'Food forest & edibles',
-    default => 'Looks + useful edibles',
+    'looks' => 'Looks maxing',
+    'kitchen' => 'Kitchen garden',
+    'food_forest' => 'Food forest',
+    default => '',
 };
+
+if ($plantGoal === 'mixed') {
+    $sub = $edibleStyle === 'food_forest' ? $guidanceFoodForest : $guidanceKitchen;
+    $goalGuidance = 'Balance strong ornamental appeal (color, texture, curb appeal, pollinator-friendly flowers, relaxing retreat) with meaningful edible plantings. For the edible portion of the plan, apply this approach: ' . $sub;
+    $focusLabel = $edibleStyle === 'food_forest' ? 'Balanced · food forest' : 'Balanced · kitchen garden';
+}
 
 if (!isset($_FILES['photo']) || !is_array($_FILES['photo'])) {
     http_response_code(400);

@@ -47,17 +47,25 @@ function ev_ago(string $iso): string {
 }
 
 function ev_focus_badge(string $focus): string {
+    $f = strtolower($focus);
+
     return match (true) {
-        str_contains(strtolower($focus), 'food') || str_contains(strtolower($focus), 'edible') => 'Food & herbs',
-        str_contains(strtolower($focus), 'look') || str_contains(strtolower($focus), 'curb') => 'Ornamental',
-        default => 'Mixed',
+        str_contains($f, 'balanced') => 'Balanced',
+        str_contains($f, 'food forest') => 'Food forest',
+        str_contains($f, 'kitchen') => 'Kitchen garden',
+        str_contains($f, 'look') || str_contains($f, 'maxing') => 'Looks maxing',
+        str_contains($f, 'food') || str_contains($f, 'forest') || str_contains($f, 'edible') => 'Edible',
+        default => 'Plan',
     };
 }
 
 function ev_focus_color(string $focus): string {
+    $f = strtolower($focus);
+
     return match (true) {
-        str_contains(strtolower($focus), 'food') || str_contains(strtolower($focus), 'edible') => 'bg-amber-900/40 text-amber-300 ring-amber-700/30',
-        str_contains(strtolower($focus), 'look') || str_contains(strtolower($focus), 'curb') => 'bg-sky-900/40 text-sky-300 ring-sky-700/30',
+        str_contains($f, 'look') || str_contains($f, 'maxing') => 'bg-sky-900/40 text-sky-300 ring-sky-700/30',
+        str_contains($f, 'kitchen') || str_contains($f, 'food') || str_contains($f, 'forest')
+            || str_contains($f, 'balanced') || str_contains($f, 'edible') => 'bg-amber-900/40 text-amber-300 ring-amber-700/30',
         default => 'bg-moss-950/60 text-moss-300 ring-moss-700/30',
     };
 }

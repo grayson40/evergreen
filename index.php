@@ -215,30 +215,51 @@ declare(strict_types=1);
                         <!-- Priority toggle -->
                         <div>
                             <p id="goal-label" class="text-xs font-semibold text-slate-300 mb-1.5">Planting priority</p>
-                            <div class="grid grid-cols-3 gap-1.5 rounded-xl bg-slate-950/60 p-1 ring-1 ring-slate-800" role="group" aria-labelledby="goal-label">
-                                <label class="relative flex cursor-pointer flex-col items-center justify-center rounded-lg py-2.5 px-2 text-center transition-all duration-150 has-[input:checked]:bg-moss-600 has-[input:checked]:shadow-lg has-[input:checked]:shadow-moss-950/30 hover:bg-slate-800/60">
-                                    <input type="radio" name="plant_goal" value="looks" class="peer sr-only" checked>
-                                    <svg class="h-4 w-4 mb-1 text-slate-500 peer-checked:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                    </svg>
-                                    <span class="text-[11px] font-semibold text-slate-500 peer-checked:text-white transition-colors">Looks</span>
-                                </label>
-                                <label class="relative flex cursor-pointer flex-col items-center justify-center rounded-lg py-2.5 px-2 text-center transition-all duration-150 has-[input:checked]:bg-moss-600 has-[input:checked]:shadow-lg has-[input:checked]:shadow-moss-950/30 hover:bg-slate-800/60">
-                                    <input type="radio" name="plant_goal" value="food" class="peer sr-only">
-                                    <svg class="h-4 w-4 mb-1 text-slate-500 peer-checked:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+                            <div class="grid grid-cols-2 gap-1.5 rounded-xl bg-slate-950/60 p-1 ring-1 ring-slate-800" role="group" aria-labelledby="goal-label">
+                                <label class="relative flex cursor-pointer flex-col items-center justify-center rounded-lg py-2 px-1.5 text-center transition-all duration-150 has-[input:checked]:bg-moss-600 has-[input:checked]:shadow-lg has-[input:checked]:shadow-moss-950/30 hover:bg-slate-800/60 min-h-[3.25rem]">
+                                    <input type="radio" name="plant_goal" value="kitchen" class="peer sr-only">
+                                    <svg class="h-4 w-4 mb-0.5 text-slate-500 peer-checked:text-white transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" />
                                     </svg>
-                                    <span class="text-[11px] font-semibold text-slate-500 peer-checked:text-white transition-colors">Food</span>
+                                    <span class="text-[10px] font-semibold text-slate-500 peer-checked:text-white transition-colors leading-tight">Kitchen garden</span>
                                 </label>
-                                <label class="relative flex cursor-pointer flex-col items-center justify-center rounded-lg py-2.5 px-2 text-center transition-all duration-150 has-[input:checked]:bg-moss-600 has-[input:checked]:shadow-lg has-[input:checked]:shadow-moss-950/30 hover:bg-slate-800/60">
+                                <label class="relative flex cursor-pointer flex-col items-center justify-center rounded-lg py-2 px-1.5 text-center transition-all duration-150 has-[input:checked]:bg-moss-600 has-[input:checked]:shadow-lg has-[input:checked]:shadow-moss-950/30 hover:bg-slate-800/60 min-h-[3.25rem]">
+                                    <input type="radio" name="plant_goal" value="looks" class="peer sr-only" checked>
+                                    <svg class="h-4 w-4 mb-0.5 text-slate-500 peer-checked:text-white transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                    </svg>
+                                    <span class="text-[10px] font-semibold text-slate-500 peer-checked:text-white transition-colors leading-tight">Looks maxing</span>
+                                </label>
+                                <label class="relative flex cursor-pointer flex-col items-center justify-center rounded-lg py-2 px-1.5 text-center transition-all duration-150 has-[input:checked]:bg-moss-600 has-[input:checked]:shadow-lg has-[input:checked]:shadow-moss-950/30 hover:bg-slate-800/60 min-h-[3.25rem]">
+                                    <input type="radio" name="plant_goal" value="food_forest" class="peer sr-only">
+                                    <svg class="h-4 w-4 mb-0.5 text-slate-500 peer-checked:text-white transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18M5.5 8.5C7.5 6 10 4.5 12 4.5s4.5 1.5 6.5 4M5.5 15.5C7.5 18 10 19.5 12 19.5s4.5-1.5 6.5-4" />
+                                    </svg>
+                                    <span class="text-[10px] font-semibold text-slate-500 peer-checked:text-white transition-colors leading-tight">Food forest</span>
+                                </label>
+                                <label class="relative flex cursor-pointer flex-col items-center justify-center rounded-lg py-2 px-1.5 text-center transition-all duration-150 has-[input:checked]:bg-moss-600 has-[input:checked]:shadow-lg has-[input:checked]:shadow-moss-950/30 hover:bg-slate-800/60 min-h-[3.25rem]">
                                     <input type="radio" name="plant_goal" value="mixed" class="peer sr-only">
-                                    <svg class="h-4 w-4 mb-1 text-slate-500 peer-checked:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+                                    <svg class="h-4 w-4 mb-0.5 text-slate-500 peer-checked:text-white transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                                     </svg>
-                                    <span class="text-[11px] font-semibold text-slate-500 peer-checked:text-white transition-colors">Both</span>
+                                    <span class="text-[10px] font-semibold text-slate-500 peer-checked:text-white transition-colors leading-tight">Balanced</span>
                                 </label>
                             </div>
-                            <p class="mt-1.5 text-[11px] text-slate-600">Ornamental · Edible garden · Balanced mix</p>
+                            <p class="mt-1.5 text-[11px] text-slate-600 leading-snug">Kitchen · Ornamental · Forest layers · Ornamental + edible</p>
+
+                            <div id="edible-sub-row" class="hidden mt-3 rounded-xl border border-slate-800 bg-slate-950/50 p-3 ring-1 ring-white/[0.04]" role="group" aria-labelledby="edible-sub-label">
+                                <p id="edible-sub-label" class="text-[11px] font-semibold text-slate-300 mb-2">Edible side of your plan</p>
+                                <div class="grid grid-cols-2 gap-1.5">
+                                    <label class="relative flex cursor-pointer items-center justify-center rounded-lg border border-slate-800 bg-slate-900/40 py-2 px-2 text-center transition-all duration-150 has-[input:checked]:border-moss-600 has-[input:checked]:bg-moss-600/15 hover:bg-slate-800/50">
+                                        <input type="radio" name="edible_style" value="kitchen" class="peer sr-only" disabled>
+                                        <span class="text-[10px] font-semibold text-slate-500 peer-checked:text-moss-300">Kitchen garden</span>
+                                    </label>
+                                    <label class="relative flex cursor-pointer items-center justify-center rounded-lg border border-slate-800 bg-slate-900/40 py-2 px-2 text-center transition-all duration-150 has-[input:checked]:border-moss-600 has-[input:checked]:bg-moss-600/15 hover:bg-slate-800/50">
+                                        <input type="radio" name="edible_style" value="food_forest" class="peer sr-only" disabled>
+                                        <span class="text-[10px] font-semibold text-slate-500 peer-checked:text-moss-300">Food forest</span>
+                                    </label>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Photo upload -->
@@ -668,6 +689,21 @@ declare(strict_types=1);
         updateFileLabel(inputPhoto.files && inputPhoto.files[0]);
     });
 
+    const edibleSubRow = $('edible-sub-row');
+    function syncEdibleSub() {
+        const mixedRadio = form.querySelector('input[name="plant_goal"][value="mixed"]');
+        const mixed = !!(mixedRadio && mixedRadio.checked);
+        if (edibleSubRow) edibleSubRow.classList.toggle('hidden', !mixed);
+        form.querySelectorAll('input[name="edible_style"]').forEach((el) => {
+            el.disabled = !mixed;
+            if (!mixed) el.checked = false;
+        });
+    }
+    form.addEventListener('change', (e) => {
+        if (e.target && e.target.name === 'plant_goal') syncEdibleSub();
+    });
+    syncEdibleSub();
+
     // ── Form submit ─────────────────────────────────────────────────────
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -679,6 +715,11 @@ declare(strict_types=1);
         }
         if (!(fd.get('location') || '').toString().trim()) {
             showError('Please enter your location so we can recommend suitable plants.');
+            return;
+        }
+        const mixedGoal = form.querySelector('input[name="plant_goal"][value="mixed"]');
+        if (mixedGoal && mixedGoal.checked && !form.querySelector('input[name="edible_style"]:checked')) {
+            showError('Choose kitchen garden or food forest for the edible part of a balanced plan.');
             return;
         }
         btnSubmit.disabled = true;
@@ -706,6 +747,7 @@ declare(strict_types=1);
         form.reset();
         const looks = form.querySelector('input[name="plant_goal"][value="looks"]');
         if (looks) looks.checked = true;
+        syncEdibleSub();
         updateFileLabel(null);
         imgBefore.removeAttribute('src');
         imgAfter.removeAttribute('src');
