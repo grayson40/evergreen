@@ -9,6 +9,7 @@ declare(strict_types=1);
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Evergreen — Yard Consultation</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -105,10 +106,8 @@ declare(strict_types=1);
         <div>
             <!-- Logo -->
             <div class="flex items-center gap-3">
-                <div class="relative flex h-10 w-10 items-center justify-center rounded-xl bg-moss-600/20 ring-1 ring-moss-500/30" aria-hidden="true">
-                    <svg class="h-5 w-5 text-moss-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c4 4 6 8 6 12a6 6 0 01-12 0c0-4 2-8 6-12z" />
-                    </svg>
+                <div class="relative h-10 w-10 overflow-hidden rounded-xl ring-1 ring-moss-500/30" aria-hidden="true">
+                    <img src="logo.png" alt="" class="h-full w-full object-cover">
                 </div>
                 <div>
                     <p class="font-display text-lg font-semibold tracking-tight text-white leading-none">Evergreen</p>

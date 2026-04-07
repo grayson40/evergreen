@@ -95,6 +95,7 @@ $nextId = $next->fetchColumn();
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= $location ? htmlspecialchars($location) . ' — ' : '' ?>Yard Consultation — Evergreen</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
